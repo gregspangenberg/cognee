@@ -278,7 +278,8 @@ class NativeLiteLLMAdapter:
             response = cast(litellm.ModelResponse, response)
         if not response.choices:
             raise ValueError("litellm_native returned no choices for a plain-text completion")
-        return response.choices[0].message.content or ""
+        # Local reasoning models (e.g. Qwen via Ollama) put their thinking before </think> in content; keep only the answer.
+        return (response.choices[0].message.content or "").rsplit("</think>", 1)[-1].strip()
 
     async def _acreate_schema_native(
         self,

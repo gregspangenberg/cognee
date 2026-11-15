@@ -162,7 +162,8 @@ class OllamaAPIAdapter(LLMInterface):
                     ],
                     **merged_kwargs,
                 )
-            return response.choices[0].message.content or ""
+            # Ollama's reasoning models put their thinking before </think> in content; keep only the answer.
+            return (response.choices[0].message.content or "").rsplit("</think>", 1)[-1].strip()
 
         try:
             async with llm_rate_limiter_context_manager():
